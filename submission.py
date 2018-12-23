@@ -1,5 +1,6 @@
 import random, util
-from game import Agent
+from game import Agent, Actions
+from util import manhattanDistance
 
 #     ********* Reflex agent- sections a and b *********
 class ReflexAgent(Agent):
@@ -214,8 +215,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-
-        # BEGIN_YOUR_CODE
         real_depth = self.depth * gameState.getNumAgents()
         # Collect legal moves and successor states
         legalMoves = gameState.getLegalActions()
@@ -235,7 +234,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         bestIndixes = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndixes)  # Pick randomly among the best
         return legalMoves[chosenIndex]
-        # END_YOUR_CODE
+
 
 
 ######################################################################################
@@ -277,25 +276,118 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
               Returns the expectimax action using self.depth and self.evaluationFunction
               All ghosts should be modeled as choosing uniformly at random from their legal moves.
         """
+        real_depth = self.depth * gameState.getNumAgents()
+        # Collect legal moves and successor states
+        legalMoves = gameState.getLegalActions()
+
+        # Choose one of the best actions
+        scores = []
+        alpha = -float('inf')
+        beta = float('inf')
+        for move in legalMoves:
+            nextState = gameState.generateSuccessor(0, move)
+            v = (self.expectimax(nextState, self.getNextAgentIndex(0, nextState.getNumAgents()), real_depth - 1))
+            scores.append(v)
+            alpha = max(v, alpha)
+
+        bestScore = max(scores)
+        bestIndixes = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndixes)  # Pick randomly among the best
+        return legalMoves[chosenIndex]
 
 
 ######################################################################################
 # f: implementing directional expectimax
 
 class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
-  """
-    Your expectimax agent
-  """
 
-  def getAction(self, gameState):
-    """
-      Returns the expectimax action using self.depth and self.evaluationFunction
-      All ghosts should be modeled as using the DirectionalGhost distribution to choose from their legal moves.
-    """
+    def getDistribution(self, index, state):
+        # Read variables from state
+        ghostState = state.getGhostState(index)
+        legalActions = state.getLegalActions(index)
+        pos = state.getGhostPosition(index)
+        isScared = ghostState.scaredTimer > 0
 
-    # BEGIN_YOUR_CODE
-    raise Exception("Not implemented yet")
-    # END_YOUR_CODE
+        speed = 1
+        if isScared: speed = 0.5
+
+        actionVectors = [Actions.directionToVector(a, speed) for a in legalActions]
+        newPositions = [(pos[0] + a[0], pos[1] + a[1]) for a in actionVectors]
+        pacmanPosition = state.getPacmanPosition()
+
+        # Select best actions given the state
+        distancesToPacman = [manhattanDistance(pos, pacmanPosition) for pos in newPositions]
+        bestProb = 0.8
+        if isScared:
+            bestScore = max(distancesToPacman)
+        else:
+            bestScore = min(distancesToPacman)
+        bestActions = [action for action, distance in zip(legalActions, distancesToPacman) if distance == bestScore]
+
+        # Construct distribution
+        dist = util.Counter()
+        for a in bestActions: dist[a] = bestProb / len(bestActions)
+        for a in legalActions: dist[a] += (1 - bestProb) / len(legalActions)
+        dist.normalize()
+        return dist
+
+
+    def expectimax(self, gameState, agentIndex, depth):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        legalMoves = gameState.getLegalActions(agentIndex)
+        if agentIndex != 0:  # then its a probabilistic state
+            gameState.getGhostState(1)
+            dist = self.getDistribution(agentIndex, gameState)
+            sum = 0
+            for move in legalMoves:
+                nextState = gameState.generateSuccessor(agentIndex, move)
+                sum += dist[move] * self.expectimax(nextState, self.getNextAgentIndex(agentIndex,
+                                                                             nextState.getNumAgents()), depth - 1)
+                return sum
+        if agentIndex == 0:
+            curMax = -float('inf')
+            for move in legalMoves:
+                nextState = gameState.generateSuccessor(agentIndex, move)
+                v = self.expectimax(nextState, self.getNextAgentIndex(agentIndex, nextState.getNumAgents()), depth - 1)
+                curMax = max(v, curMax)
+            return curMax
+        else:
+            curMin = float('inf')
+            for move in legalMoves:
+                nextState = gameState.generateSuccessor(agentIndex, move)
+                v = self.expectimax(nextState, self.getNextAgentIndex(agentIndex, nextState.getNumAgents()), depth - 1)
+                curMin = min(v, curMin)
+            return curMin
+
+    """
+        Your expectimax agent
+      """
+
+    def getAction(self, gameState):
+        """
+              Returns the expectimax action using self.depth and self.evaluationFunction
+              All ghosts should be modeled as choosing uniformly at random from their legal moves.
+        """
+        real_depth = self.depth * gameState.getNumAgents()
+        # Collect legal moves and successor states
+        legalMoves = gameState.getLegalActions()
+
+        # Choose one of the best actions
+        scores = []
+        alpha = -float('inf')
+        beta = float('inf')
+        for move in legalMoves:
+            nextState = gameState.generateSuccessor(0, move)
+            v = (self.expectimax(nextState, self.getNextAgentIndex(0, nextState.getNumAgents()), real_depth - 1))
+            scores.append(v)
+            alpha = max(v, alpha)
+
+        bestScore = max(scores)
+        bestIndixes = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndixes)  # Pick randomly among the best
+        return legalMoves[chosenIndex]
+
 
 
 ######################################################################################
