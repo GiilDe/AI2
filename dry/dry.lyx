@@ -1,0 +1,454 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language hebrew
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Part*
+תרגיל בית
+\family roman
+\series bold
+\shape up
+\size larger
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+2
+\end_layout
+
+\begin_layout Subsection*
+חלק א'
+\end_layout
+
+\begin_layout Quote
+
+\numeric on
+3
+\numeric off
+.
+ הסוכן 
+\begin_inset Formula $\textrm{ReflexAgent}$
+\end_inset
+
+ בוחר בכל פעם מצב עם ניקוד מקסימלי.
+ הוא מחשב ניקוד לכל צעד חוקי שהוא יכול ובוחר צעד מקסימלי באופן רנדומלי.
+\end_layout
+
+\begin_layout Subsection*
+חלק ג'
+\end_layout
+
+\begin_layout Enumerate
+ההנחה היא שהמשחק מתנהל בתורות, כלומר כל שחקן מחכה לתורו כדי לעשות צעד, כאשר
+ בפועל כולם עושים צעדים במקביל.
+\end_layout
+
+\begin_layout Enumerate
+בוצע!
+\end_layout
+
+\begin_layout Enumerate
+נסתכל על קבוצת הרוחות כאובייקט אחד, אשר קבוצת הפעולות שהוא יכול לבצע 
+\begin_inset Formula $A$
+\end_inset
+
+ היא כל הקומבינציות של קבוצת הפעולות של כל רוח, כלומר אם נסמן את קבוצת הפעולות
+ האפשריות של הרוח ה- 
+\begin_inset Formula $i$
+\end_inset
+
+ ב- 
+\begin_inset Formula $A_{i}$
+\end_inset
+
+ אז 
+\begin_inset Formula $A=A_{1}\times A_{2}\times\ldots\times A_{n}$
+\end_inset
+
+ כאשר 
+\begin_inset Formula $n$
+\end_inset
+
+ הוא מספר הרוחות.
+ כאשר כל איבר ב- 
+\begin_inset Formula $A$
+\end_inset
+
+ הוא מנייה סדורה שהרכיב ה-
+\begin_inset Formula $i$
+\end_inset
+
+ שלו הוא הפעולה שתבצע הרוח ה- 
+\begin_inset Formula $i$
+\end_inset
+
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+היתרון של השיטה שהצענו הוא שהיא מהווה מודל יותר טוב של המשחק כי בפועל כל
+ הרוחות זזות בו זמנית.
+ החסרון של השיטה לעומת השיטה הקודמת הוא שייתכן מצב שבשיטה זו נעשה חישובים
+ שבשיטה הקודמת נוכל ליגזום )אם משתמשים ב- 
+\begin_inset Formula $\alpha\beta$
+\end_inset
+
+(.
+\end_layout
+
+\begin_layout Section*
+חלק ד'
+\end_layout
+
+\begin_layout Enumerate
+מבנה העץ החדש שהגדרנו משפיע על האלגוריתם: כמו שאמרנו בסעיך הקודם, הוא מאפשר
+ לבצע גיזומים שלא היו מתבצעים אם היינו מבצעים אם הייתה שכבת מינימום יחידה.
+\begin_inset Newline newline
+\end_inset
+
+הנה דוגמה: 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Graphics
+	filename תמונה ל-lyx.png
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+כשנגיע לצומת עם ערך
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+2
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\numeric off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+נגזום את כל תת העץ הימני של צומת המקסימום, אם האב של הצומת עם ערך
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+2
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\numeric off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ היה צומת מקסימום אז לא היינו מבצעים גזימה.
+\end_layout
+
+\begin_layout Enumerate
+בוצע!
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $\:$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+מבחינת זמן ריצה כמו שראינו מקודם הוא יפתח פחות צמתים ולכן ירוץ יותר מהר.
+\end_layout
+
+\begin_layout Enumerate
+מבחינת בחירת מהלכים, ייתכן ש- 
+\begin_inset Formula $\alpha\beta$
+\end_inset
+
+ יתנהג שונה.
+ למשל:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Graphics
+	filename pasted1.png
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+ניתן לראות שהבן הימני של השורש יקבל את הערך
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+3
+\numeric off
+, באלגוריתם 
+\begin_inset Formula $\textrm{minimax}$
+\end_inset
+
+ היינו יכולים לבחור באופן רנדומלי בין שני הבנים של השורש, אבל מכיוון שב-
+ 
+\begin_inset Formula $\alpha\beta$
+\end_inset
+
+ אנחנו מבצעים במקרה זה גזימה, ניבחר בהכרח את הבן השמאלי.
+\end_layout
+
+\end_deeper
+\begin_layout Section*
+חלק ה'
+\end_layout
+
+\begin_layout Enumerate
+בוצע!
+\end_layout
+
+\begin_layout Enumerate
+שני הסוכנים הקודמים מניחים שהרוח תעשה בכל פעם את הצעד הגרוע ביותר עבורם
+ ולכן יתנהגו בצורה מאוד פחדנית, ואף במקרים מסוימים "יתאבדו".
+ בפועל הרוחות זזות באופן רנדומלי ולכן אנו מצפים שסוכן הפועל לפי 
+\begin_inset Formula $\textrm{Expectimax}$
+\end_inset
+
+ יפעל בצורה טובה יותר.
+ למשל:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Graphics
+	filename pasted2.png
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+במקרה הזה בסוכן 
+\begin_inset Formula $\textrm{Minimax}$
+\end_inset
+
+ או 
+\begin_inset Formula $\alpha\beta$
+\end_inset
+
+ אם החיפוש הוא לעומק מספיק, אז כל ערכי המינימקס יהיו מוות של הפאקמן, ולכן
+ הפאקמן לא יעדיף לזוז שמאלה מאשר ימינה.
+ לעומת סוכן 
+\begin_inset Formula $\textrm{Expetimax}$
+\end_inset
+
+ יבין שההסתברות שלו למות אם הוא זז שמאלה קטנה יותר ולכן הוא יזוז שמאלה.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Graphics
+	filename pasted4.png
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+במקרה הזה סוכן 
+\begin_inset Formula $\textrm{Minimax}$
+\end_inset
+
+ או 
+\begin_inset Formula $\alpha\beta$
+\end_inset
+
+ לא ילך לאכול את ההמבורגר כי ערך המינימקס שיתקבל מצעד ימינה הוא מוות, ייתכן
+ שסוכן 
+\begin_inset Formula $\textrm{Exeptimax}$
+\end_inset
+
+ כן יילך לאכול את ההמבורגר כי יעשה צעד ימינה כי ההסתברות שלו למות אינה גבוהה.
+\end_layout
+
+\begin_layout Enumerate
+
+\end_layout
+
+\end_body
+\end_document
