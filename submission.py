@@ -2,6 +2,74 @@ import random, util
 from game import Agent, Actions
 from util import manhattanDistance
 
+
+def average(arr):
+    if len(arr) == 0:
+        return 0
+    return sum(arr)/len(arr)
+
+def minimum(arr):
+    if len(arr) == 0:
+        return 0
+    return min(arr)
+
+def getGhostsDistances(gameState):
+    pacmanPosition = gameState.getPacmanPosition()
+    ghostsPositions = gameState.getGhostPositions()
+    distancesToPacman = [manhattanDistance(pos, pacmanPosition) for pos in ghostsPositions]
+    return distancesToPacman
+
+def getCapsulesDistances(gameState):
+    pacmanPosition = gameState.getPacmanPosition()
+    capsulesPositions = gameState.getCapsules()
+    distancesToPacman = [manhattanDistance(pos, pacmanPosition) for pos in capsulesPositions]
+    return distancesToPacman
+
+def getGhostDistAvg(gameState):
+    distancesToPacman = getGhostsDistances(gameState)
+    return average(distancesToPacman)
+
+# returns two distances, with the closest to the left
+def getClosestGhostPair(gameState):
+    distancesToPacman = getGhostsDistances(gameState)
+    closestDistances = [dist for dist in distancesToPacman if dist == minimum(distancesToPacman)]
+    if len(closestDistances) > 1:
+        return minimum(distancesToPacman), minimum(distancesToPacman)
+    else:
+        distanceWithoutClosest = [dist for dist in distancesToPacman if dist != minimum(distancesToPacman)]
+        return minimum(distancesToPacman), minimum(distanceWithoutClosest)
+
+# this function is slow as it iterates over the whole board
+def getFoodDistances(gameState):
+    pacmanPosition = gameState.getPacmanPosition()
+    foods = gameState.getFood()
+    foodDists = []
+    foodsHeight = 0
+    for arr in foods:
+        foodsHeight += 1
+    for i in range(foodsHeight):
+        for j in range(len(foods[0])):
+            if foods[i][j] is True:
+                foodDists.append(manhattanDistance((i, j), pacmanPosition))
+    return foodDists
+
+def getAvgFoodDists(gameState):
+    foodDists = getFoodDistances(gameState)
+    return average(foodDists)
+
+def getMinFoodDist(gameState):
+    foodDists = getFoodDistances(gameState)
+    return minimum(foodDists)
+
+def getMinCapsuleDist(gameState):
+    capsuleDists = getCapsulesDistances(gameState)
+    return minimum(capsuleDists)
+
+def getCapsuleDistAvg(gameState):
+    capsuleDists = getCapsulesDistances(gameState)
+    return average(capsuleDists)
+
+
 #     ********* Reflex agent- sections a and b *********
 class ReflexAgent(Agent):
   """
@@ -11,7 +79,6 @@ class ReflexAgent(Agent):
   def __init__(self):
     self.lastPositions = []
     self.dc = None
-
 
   def getAction(self, gameState):
     """
@@ -68,9 +135,28 @@ def betterEvaluationFunction(gameState):
   gameState.getScore():
   The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
   """
-  return scoreEvaluationFunction(gameState)
-#     ********* MultiAgent Search Agents- sections c,d,e,f*********
+  if gameState.isLose():
+      return -float('inf')
+  if gameState.isWin():
+      return float('inf')
+  ghostStates = gameState.getGhostStates()
+  isScared = ghostStates[0].scaredTimer > 0
+  if isScared is True:
+      w = -1
+  else:
+      w = 1
 
+  minG1, minG2 = getClosestGhostPair(gameState)
+  minG = (2*minG1 + minG2)/2
+  avgG = getGhostDistAvg(gameState)
+  avgC = getCapsuleDistAvg(gameState)
+  avgF = getAvgFoodDists(gameState)
+  minC = getMinCapsuleDist(gameState)
+  minF = getMinFoodDist(gameState)
+  return w*(avgG + minG) + gameState.getScore() - (avgC + minC + avgF + minF)
+
+
+#     ********* MultiAgent Search Agents- sections c,d,e,f*********
 class MultiAgentSearchAgent(Agent):
   """
     This class provides some common elements to all of your
@@ -107,7 +193,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
       if depth == 0 or gameState.isWin() or gameState.isLose():
           return self.evaluationFunction(gameState)
 
-      legalMoves = gameState.getLegalActions()
+      legalMoves = gameState.getLegalActions(agentIndex)
       if agentIndex == 0:
           curMax = -float('inf')
           for move in legalMoves:
@@ -337,7 +423,6 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
             return self.evaluationFunction(gameState)
         legalMoves = gameState.getLegalActions(agentIndex)
         if agentIndex != 0:  # then its a probabilistic state
-            gameState.getGhostState(1)
             dist = self.getDistribution(agentIndex, gameState)
             sum = 0
             for move in legalMoves:
@@ -379,7 +464,7 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
         beta = float('inf')
         for move in legalMoves:
             nextState = gameState.generateSuccessor(0, move)
-            v = (self.expectimax(nextState, self.getNextAgentIndex(0, nextState.getNumAgents()), real_depth - 1))
+            v = self.expectimax(nextState, self.getNextAgentIndex(0, nextState.getNumAgents()), real_depth - 1)
             scores.append(v)
             alpha = max(v, alpha)
 
