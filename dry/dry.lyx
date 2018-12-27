@@ -380,7 +380,7 @@
 בוצע!
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 שני הסוכנים הקודמים מניחים שהרוח תעשה בכל פעם את הצעד הגרוע ביותר עבורם
  ולכן יתנהגו בצורה מאוד פחדנית, ואף במקרים מסוימים "יתאבדו".
  בפועל הרוחות זזות באופן רנדומלי ולכן אנו מצפים שסוכן הפועל לפי 
@@ -443,11 +443,220 @@
 \begin_inset Formula $\textrm{Exeptimax}$
 \end_inset
 
- כן יילך לאכול את ההמבורגר כי יעשה צעד ימינה כי ההסתברות שלו למות אינה גבוהה.
+ כן יילך לאכול את ההמבורגר כי יעשה צעד ימינה כי ההסתברות שלו למות אינה גבוהה,
+ ואכן נעדיף שהפאקמן ילך ימינה.
+\end_layout
+
+\begin_layout Section*
+חלק ו'
 \end_layout
 
 \begin_layout Enumerate
+האסטרטגיה של הרוח היא ללכת לכיוון הפאקמן, כל צעד 
+\begin_inset Formula $o$
+\end_inset
 
+ יקבל התסברות לפי הנוסחה הבאה:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula $P(o)=\begin{cases}
+\frac{\textrm{best prob}}{|\textrm{best moves|}}+\frac{1-\textrm{best prob}}{\mid\textrm{legal moves}\mid} & o\in\textrm{best moves}\\
+\frac{1-\textrm{best prob}}{\mid\textrm{legal moves}\mid} & \textrm{otherwise}
+\end{cases}$
+\end_inset
+
+ כאשר 
+\begin_inset Formula $\textrm{best moves}$
+\end_inset
+
+ היא קבוצה הפעולות שביצוען יביא את הרוח למרחק מנהטן מינימלי מהפאקמן )או
+ מקסימלי אם הרוח היא אכילה(, 
+\begin_inset Formula $\textrm{legal moves}$
+\end_inset
+
+ היא קבוצת כל הפעולות האפשריות עבור הרוח, ו- 
+\begin_inset Formula $\textrm{best prob}$
+\end_inset
+
+ היא הסתברות שנקבעת באיתחול הרוח.
+\end_layout
+
+\begin_layout Enumerate
+בוצע
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $RandomGhost$
+\end_inset
+
+בוחרת באופן רנדומלי בהתפלגות שווה לבחירת כל צעד ואילו 
+\begin_inset Formula $DirectionalGhost$
+\end_inset
+
+ בוחרת את הצעד הבא באופן רנדומלי עם התפלגות אשר נותנת יתרון לבחירת צעד שמקרב
+ את הרוח הכי הרבה לפי מרחק מנהטן באופן מדויק יותר ניתן להסתכל על סעיף קודם.
+\end_layout
+
+\begin_layout Enumerate
+שינוי מוצע ראשון - כל רוח תריץ אלגוריתם 
+\begin_inset Formula $A*$
+\end_inset
+
+ - ניתן להשתמש ביוריסטיקה של מרחק מנהטן - בכדי לחפש את הפקמן.
+ הרוח תבצע את הצעד הראשון של המסלול שיחזיר אלגוריתם 
+\begin_inset Formula $A*$
+\end_inset
+
+, פתרון זה דורש משאבים גדולים יותר )זמן ומקום( ולכן עלול להיות בעייתי מבחינה
+ זו, אך הרוחות יפעלו בצורה טובה יותר, מכיוון שדרך זו מתחשבת בכך שיש קירות
+ במגרש ולכן אנו נלך בכיוון המסלול הקצר ביותר )מכיוון ש- 
+\begin_inset Formula $A*$
+\end_inset
+
+ קביל( בניגוד למרחק מנהטן אשר אינו מבטיח זאת.
+ שינוי מוצע שני - כל רוח תריץ אלגוריתם 
+\begin_inset Formula $alphaBeta$
+\end_inset
+
+ עם יוריסטיקה מתאימה -למשל מרחק מנהטן לפקמן - והגבלת עומק מסוימת, בחירת
+ הצעד באופן זה היא טובה יותר מהאופן הנוכחי מכיוון שהיא מסתכלת מספר צעדים
+ קדימה בניגוד לאופן הבחירה הנוכחי שמסתכל רק על המצב הנוכחי.
+ 
+\end_layout
+
+\begin_layout Section*
+חלק ז'
+\end_layout
+
+\begin_layout Standard
+השערה 
+\begin_inset Formula $H_{0}$
+\end_inset
+
+: שחקן הפקמן 
+\begin_inset Formula $DirectionalExpectimaxAgent-DE$
+\end_inset
+
+ הוא טוב יותר מאשר השחקן 
+\begin_inset Formula $RandomExpectimaxAgent-RE$
+\end_inset
+
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+כאשר הרוחות הן מסוג 
+\begin_inset Formula $DirectionalGhost$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $H_{1}$
+\end_inset
+
+: 
+\begin_inset Formula $RE$
+\end_inset
+
+ טוב לפחות כמו 
+\begin_inset Formula $DE$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+מבחן: כל שחקן יבצע
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+20
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\numeric off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+משחקים כאשר הרוחות הן מסוג 
+\begin_inset Formula $DirectionalGhost$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+כלל החלטה: נחשב ניקוד ממוצע לכל שחקן אם מתקיים ש- 
+\begin_inset Formula $avgScore(DE)>avgScore(RE)*\frac{120}{100}$
+\end_inset
+
+ אז נאמר ש- 
+\begin_inset Formula $H_{1}$
+\end_inset
+
+ התקבלה.
 \end_layout
 
 \end_body
