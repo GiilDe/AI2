@@ -1,7 +1,7 @@
 import random, util
 from game import Agent, Actions
 from util import manhattanDistance
-
+import  numpy as np
 
 def average(arr):
     if len(arr) == 0:
@@ -120,42 +120,95 @@ def scoreEvaluationFunction(gameState):
 ######################################################################################
 # b: implementing a better heuristic function
 def betterEvaluationFunction(gameState):
-  """
+    """
 
-  The betterEvaluationFunction takes in a GameState (pacman.py) and should return a number, where higher numbers are better.
+    The betterEvaluationFunction takes in a GameState (pacman.py) and should return a number, where higher numbers are better.
 
-  A GameState specifies the full game state, including the food, capsules, agent configurations and more.
-  Following are a few of the helper methods that you can use to query a GameState object to gather information about
-  the present state of Pac-Man, the ghosts and the maze:
+    A GameState specifies the full game state, including the food, capsules, agent configurations and more.
+    Following are a few of the helper methods that you can use to query a GameState object to gather information about
+    the present state of Pac-Man, the ghosts and the maze:
 
-  gameState.getLegalActions():
-  gameState.getPacmanState():
-  gameState.getGhostStates():
-  gameState.getNumAgents():
-  gameState.getScore():
-  The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
-  """
-  if gameState.isLose():
-      return -float('inf')
-  if gameState.isWin():
-      return float('inf')
-  ghostStates = gameState.getGhostStates()
-  isScared = ghostStates[0].scaredTimer > 0
-  if isScared is True:
-      w = -1
-  else:
-      w = 1
+    gameState.getLegalActions():
+    gameState.getPacmanState():
+    gameState.getGhostStates():
+    gameState.getNumAgents():
+    gameState.getScore():
+    The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
+    """
+    if gameState.isLose():
+        return -float('inf')
+    if gameState.isWin():
+        return float('inf')
+    ghostStates = gameState.getGhostStates()
+    isScared = ghostStates[0].scaredTimer > 0
+    if isScared is True:
+        w = -2
+    else:
+        w = 2
 
-  minG1, minG2 = getClosestGhostPair(gameState)
-  minG = (2*minG1 + minG2)/2
-  avgG = getGhostDistAvg(gameState)
-  avgC = getCapsuleDistAvg(gameState)
-  avgF = getAvgFoodDists(gameState)
-  minC = getMinCapsuleDist(gameState)
-  minF = getMinFoodDist(gameState)
-  return w*(avgG + minG) + gameState.getScore() - (avgC + minC + avgF + minF)
+    closest_ghost, closest_ghost_2 = getClosestGhostPair(gameState)
+    avg_2_closest_ghosts = (2 * closest_ghost + closest_ghost_2) / 2
+    avg_ghosts_dist = getGhostDistAvg(gameState)
+    avg_capsuls_dist = getCapsuleDistAvg(gameState)
+    avg_food_dist = getAvgFoodDists(gameState)
+    min_capsul_dist = getMinCapsuleDist(gameState)
+    min_food_dist = getMinFoodDist(gameState)
+    num_food = gameState.getNumFood()
+    num_ghosts = gameState.getNumAgents()-1
+    score = gameState.getScore()
 
+    #############################################         sqr         ##################################################
+    sqr_closest_ghost = closest_ghost**2
+    sqr_closest_ghost_2 = closest_ghost_2**2
+    sqr_avg_2_closest_ghosts = avg_2_closest_ghosts**2
+    sqr_avg_ghosts_dist = avg_ghosts_dist**2
+    sqr_avg_capsuls_dist =  avg_capsuls_dist**2
+    sqr_avg_food_dist = avg_food_dist**2
+    sqr_min_capsul_dist = min_capsul_dist**2
+    sqr_min_food_dist = min_food_dist**2
+    sqr_num_food = num_food**2
+    sqr_num_ghosts = num_ghosts**2
+    sqr_score = score**2
+    #############################################         sqrt         #################################################
+    sqrt_closest_ghost = closest_ghost ** 0.5
+    sqrt_closest_ghost_2 = closest_ghost_2 ** 0.5
+    sqrt_avg_2_closest_ghosts = avg_2_closest_ghosts ** 0.5
+    sqrt_avg_ghosts_dist = avg_ghosts_dist ** 0.5
+    sqrt_avg_capsuls_dist = avg_capsuls_dist ** 0.5
+    sqrt_avg_food_dist = avg_food_dist ** 0.5
+    sqrt_min_capsul_dist = min_capsul_dist ** 0.5
+    sqrt_min_food_dist = min_food_dist ** 0.5
+    sqrt_num_food = num_food ** 0.5
+    sqrt_num_ghosts = num_ghosts ** 0.5
+    sqrt_score = score ** 0.5
 
+    ##########################################       food combi         ################################################
+    food_comb_1 = - min_food_dist**2/avg_food_dist
+    food_comb_2 = -(avg_food_dist**2) * min_food_dist
+
+    ##########################################    good ghost combi      ################################################
+    good_ghost_comb_1 = closest_ghost**(-10+avg_2_closest_ghosts)
+    good_ghost_comb_2 = avg_2_closest_ghosts**(-10+avg_2_closest_ghosts)
+    good_ghost_comb_3 = closest_ghost**(-10+closest_ghost_2)
+    good_ghost_comb_4 = closest_ghost_2**(-10+closest_ghost)
+
+    ##########################################    good ghost combi      ################################################
+    bad_ghost_comb_1 = - closest_ghost**(3/avg_2_closest_ghosts)
+    bad_ghost_comb_2 = - avg_2_closest_ghosts**(3/avg_2_closest_ghosts)
+
+    #############################################    score combi      ##################################################
+    score_comb_1 = (score)
+    score_comb_2 = (score)**2
+    score_comb_3 = (score)**3
+
+    food_val = food_comb_1 + food_comb_2
+    score_val = (score_comb_1 + score_comb_2 + score_comb_3)/num_food
+    #good_ghost_val = (good_ghost_comb_1 + good_ghost_comb_2 + good_ghost_comb_3 + good_ghost_comb_4)/100
+    bad_ghost_val = bad_ghost_comb_1 + bad_ghost_comb_2
+    # return food_val + score_val  -bad_ghost_val + min_capsul_dist*avg_food_dist*10
+    
+    return score*1000/num_food - closest_ghost*(10 - avg_ghosts_dist) - min_capsul_dist + 1000/avg_food_dist - \
+           1000*min_food_dist/num_food + avg_ghosts_dist**2/1000
 #     ********* MultiAgent Search Agents- sections c,d,e,f*********
 class MultiAgentSearchAgent(Agent):
   """
@@ -189,7 +242,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
   """
 
   def minimax(self, gameState, agentIndex, depth):
-      numAgents = gameState.getNumAgents()
       if depth == 0 or gameState.isWin() or gameState.isLose():
           return self.evaluationFunction(gameState)
 
@@ -338,7 +390,7 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
                 nextState = gameState.generateSuccessor(agentIndex, move)
                 sum += p*self.expectimax(nextState, self.getNextAgentIndex(agentIndex,
                                                                          nextState.getNumAgents()), depth - 1)
-                return sum
+            return sum
         if agentIndex == 0:
             curMax = -float('inf')
             for move in legalMoves:
@@ -429,7 +481,7 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
                 nextState = gameState.generateSuccessor(agentIndex, move)
                 sum += dist[move] * self.expectimax(nextState, self.getNextAgentIndex(agentIndex,
                                                                              nextState.getNumAgents()), depth - 1)
-                return sum
+            return sum
         if agentIndex == 0:
             curMax = -float('inf')
             for move in legalMoves:
@@ -474,7 +526,6 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
         return legalMoves[chosenIndex]
 
 
-
 ######################################################################################
 # I: implementing competition agent
 
@@ -482,6 +533,170 @@ class CompetitionAgent(MultiAgentSearchAgent):
   """
     Your competition agent
   """
+
+  def BetterEvaluationFunction(gameState):
+      """
+
+      The betterEvaluationFunction takes in a GameState (pacman.py) and should return a number, where higher numbers are better.
+
+      A GameState specifies the full game state, including the food, capsules, agent configurations and more.
+      Following are a few of the helper methods that you can use to query a GameState object to gather information about
+      the present state of Pac-Man, the ghosts and the maze:
+
+      gameState.getLegalActions():
+      gameState.getPacmanState():
+      gameState.getGhostStates():
+      gameState.getNumAgents():
+      gameState.getScore():
+      The GameState class is defined in pacman.py and you might want to look into that for other helper methods.
+      """
+      if gameState.isLose():
+          return -float('inf')
+      if gameState.isWin():
+          return float('inf')
+      ghostStates = gameState.getGhostStates()
+      isScared = ghostStates[0].scaredTimer > 0
+      if isScared is True:
+          w = -2
+      else:
+          w = 2
+
+      closest_ghost, closest_ghost_2 = getClosestGhostPair(gameState)
+      avg_2_closest_ghosts = (2 * closest_ghost + closest_ghost_2) / 2
+      avg_ghosts_dist = getGhostDistAvg(gameState)
+      avg_capsuls_dist = getCapsuleDistAvg(gameState)
+      avg_food_dist = getAvgFoodDists(gameState)
+      min_capsul_dist = getMinCapsuleDist(gameState)
+      min_food_dist = getMinFoodDist(gameState)
+      num_food = gameState.getNumFood()
+      num_ghosts = gameState.getNumAgents() - 1
+      score = gameState.getScore()
+
+      #############################################         sqr         ##################################################
+      sqr_closest_ghost = closest_ghost ** 2
+      sqr_closest_ghost_2 = closest_ghost_2 ** 2
+      sqr_avg_2_closest_ghosts = avg_2_closest_ghosts ** 2
+      sqr_avg_ghosts_dist = avg_ghosts_dist ** 2
+      sqr_avg_capsuls_dist = avg_capsuls_dist ** 2
+      sqr_avg_food_dist = avg_food_dist ** 2
+      sqr_min_capsul_dist = min_capsul_dist ** 2
+      sqr_min_food_dist = min_food_dist ** 2
+      sqr_num_food = num_food ** 2
+      sqr_num_ghosts = num_ghosts ** 2
+      sqr_score = score ** 2
+      #############################################         sqrt         #################################################
+      sqrt_closest_ghost = closest_ghost ** 0.5
+      sqrt_closest_ghost_2 = closest_ghost_2 ** 0.5
+      sqrt_avg_2_closest_ghosts = avg_2_closest_ghosts ** 0.5
+      sqrt_avg_ghosts_dist = avg_ghosts_dist ** 0.5
+      sqrt_avg_capsuls_dist = avg_capsuls_dist ** 0.5
+      sqrt_avg_food_dist = avg_food_dist ** 0.5
+      sqrt_min_capsul_dist = min_capsul_dist ** 0.5
+      sqrt_min_food_dist = min_food_dist ** 0.5
+      sqrt_num_food = num_food ** 0.5
+      sqrt_num_ghosts = num_ghosts ** 0.5
+      sqrt_score = score ** 0.5
+
+      ##########################################       food combi         ################################################
+      food_comb_1 = min_food_dist ** (6 - num_food)
+      food_comb_2 = min_food_dist ** (4 - num_food)
+      food_comb_3 = min_food_dist ** (2 - num_food)
+      food_comb_4 = min_food_dist ** (1 - num_food)
+      food_comb_5 = avg_food_dist ** (10 - num_food)
+      food_comb_6 = avg_food_dist ** (8 - num_food)
+      food_comb_7 = avg_food_dist ** (5 - num_food)
+
+      #############################################    ghost combi      ##################################################
+      ghost_comb_1 = closest_ghost ** (5 - avg_2_closest_ghosts)
+      ghost_comb_2 = avg_2_closest_ghosts ** (5 - avg_2_closest_ghosts)
+      ghost_comb_3 = closest_ghost ** (5 - closest_ghost_2)
+      ghost_comb_4 = closest_ghost_2 ** (5 - closest_ghost)
+
+      #############################################    score combi      ##################################################
+      score_comb_1 = (score * w)
+      score_comb_2 = (score * w) ** 2
+      score_comb_3 = (score * w) ** 3
+
+      ###############################################    with w      #####################################################
+      w_closest_ghost = w * closest_ghost
+      w_closest_ghost_2 = w * closest_ghost
+      w_avg_2_closest_ghosts = w * avg_2_closest_ghosts
+      w_avg_ghosts_dist = w * avg_ghosts_dist
+      w_avg_capsuls_dist = w * avg_capsuls_dist
+      w_avg_food_dist = w * avg_food_dist
+      w_min_capsul_dist = w * min_capsul_dist
+      w_min_food_dist = w * min_food_dist
+      w_num_food = w * num_food
+      w_num_ghosts = w * num_ghosts
+      w_score = w * score
+
+      w_sqr_closest_ghost = w * sqr_closest_ghost
+      w_sqr_closest_ghost_2 = w * sqr_closest_ghost_2
+      w_sqr_avg_2_closest_ghosts = w * sqr_avg_2_closest_ghosts
+      w_sqr_avg_ghosts_dist = w * sqr_avg_ghosts_dist
+      w_sqr_avg_capsuls_dist = w * sqr_avg_capsuls_dist
+      w_sqr_avg_food_dist = w * sqr_avg_food_dist
+      w_sqr_min_capsul_dist = w * sqr_min_capsul_dist
+      w_sqr_min_food_dist = w * sqr_min_food_dist
+      w_sqr_num_food = w * sqr_num_food
+      w_sqr_num_ghosts = w * sqr_num_ghosts
+      w_sqr_score = w * sqr_score
+
+      w_sqrt_closest_ghost = w * sqrt_closest_ghost
+      w_sqrt_closest_ghost_2 = w * sqrt_closest_ghost_2
+      w_sqrt_avg_2_closest_ghosts = w * sqrt_avg_2_closest_ghosts
+      w_sqrt_avg_ghosts_dist = w * sqrt_avg_ghosts_dist
+      w_sqrt_avg_capsuls_dist = w * sqrt_avg_capsuls_dist
+      w_sqrt_avg_food_dist = w * sqrt_avg_food_dist
+      w_sqrt_min_capsul_dist = w * sqrt_min_capsul_dist
+      w_sqrt_min_food_dist = w * sqrt_min_food_dist
+      w_sqrt_num_food = w * sqrt_num_food
+      w_sqrt_num_ghosts = w * sqrt_num_ghosts
+      w_sqrt_score = w * sqrt_score
+
+      w_food_comb_1 = w * food_comb_1
+      w_food_comb_2 = w * food_comb_2
+      w_food_comb_3 = w * food_comb_3
+      w_food_comb_4 = w * food_comb_4
+      w_food_comb_5 = w * food_comb_5
+      w_food_comb_6 = w * food_comb_6
+      w_food_comb_7 = w * food_comb_7
+
+      w_ghost_comb_1 = w * ghost_comb_1
+      w_ghost_comb_2 = w * ghost_comb_2
+      w_ghost_comb_3 = w * ghost_comb_3
+      w_ghost_comb_4 = w * ghost_comb_4
+
+      w_score_comb_1 = w * score_comb_1
+      w_score_comb_2 = w * score_comb_2
+      w_score_comb_3 = w * score_comb_3
+
+      # len = 92
+      vals_array = np.array([closest_ghost, closest_ghost_2, avg_ghosts_dist, avg_capsuls_dist, avg_food_dist,
+                             min_capsul_dist, min_food_dist, num_food, num_ghosts, score, sqr_closest_ghost,
+                             sqr_closest_ghost_2, sqr_avg_2_closest_ghosts, sqr_avg_ghosts_dist, sqr_avg_capsuls_dist,
+                             sqr_avg_food_dist, sqr_min_capsul_dist, sqr_min_food_dist, sqr_num_food, sqr_num_ghosts,
+                             sqr_score, sqrt_closest_ghost, sqrt_closest_ghost_2, sqrt_avg_2_closest_ghosts,
+                             sqrt_avg_ghosts_dist, sqrt_avg_capsuls_dist, sqrt_avg_food_dist, sqrt_min_capsul_dist,
+                             sqrt_min_food_dist, sqrt_num_food, sqrt_num_ghosts,
+                             sqrt_score, food_comb_1, food_comb_2, food_comb_3, food_comb_4, food_comb_5, food_comb_6,
+                             food_comb_7, ghost_comb_1, ghost_comb_2, ghost_comb_3, ghost_comb_4, score_comb_1,
+                             score_comb_2, score_comb_3, w_closest_ghost, w_closest_ghost_2, w_avg_ghosts_dist,
+                             w_avg_capsuls_dist, w_avg_food_dist, w_min_capsul_dist, w_min_food_dist,
+                             w_num_food, w_num_ghosts, w_score, w_sqr_closest_ghost, w_sqr_closest_ghost_2,
+                             w_sqr_avg_2_closest_ghosts, w_sqr_avg_ghosts_dist, w_sqr_avg_capsuls_dist,
+                             w_sqr_avg_food_dist, w_sqr_min_capsul_dist, w_sqr_min_food_dist, w_sqr_num_food,
+                             w_sqr_num_ghosts, w_sqr_score, w_sqrt_closest_ghost, w_sqrt_closest_ghost_2,
+                             w_sqrt_avg_2_closest_ghosts, w_sqrt_avg_ghosts_dist, w_sqrt_avg_capsuls_dist,
+                             w_sqrt_avg_food_dist, w_sqrt_min_capsul_dist, w_sqrt_min_food_dist, w_sqrt_num_food,
+                             w_sqrt_num_ghosts, w_sqrt_score, w_food_comb_1, w_food_comb_2, w_food_comb_3,
+                             w_food_comb_4,
+                             w_food_comb_5, w_food_comb_6, w_food_comb_7, w_ghost_comb_1, w_ghost_comb_2,
+                             w_ghost_comb_3,
+                             w_ghost_comb_4, w_score_comb_1, w_score_comb_2, w_score_comb_3])
+
+      from learning import weights
+      return vals_array.dot(weights)
 
   def getAction(self, gameState):
     """
