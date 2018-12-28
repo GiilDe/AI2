@@ -1,7 +1,6 @@
 import random, util
 from game import Agent, Actions
 from util import manhattanDistance
-import  numpy as np
 
 def average(arr):
     if len(arr) == 0:
@@ -50,7 +49,9 @@ def getClosestGhostPair(gameState):
     closestGhosts = [ghostState for ghostState in ghostStates if
                      manhattanDistance(ghostState.getPosition(), pacmanPosition) == min(distancesToPacman)]
     if len(closestGhosts) > 1:
-        return closestGhosts[0], closestGhosts[1]
+        dist1 = manhattanDistance(closestGhosts[0].getPosition(), pacmanPosition)
+        dist2 = manhattanDistance(closestGhosts[1].getPosition(), pacmanPosition)
+        return (dist1, closestGhosts[0]), (dist2, closestGhosts[1])
     else:
         notClosestGhosts = [ghostState for ghostState in ghostStates if
                             manhattanDistance(ghostState.getPosition(), pacmanPosition) != min(distancesToPacman)]
@@ -60,8 +61,11 @@ def getClosestGhostPair(gameState):
                                manhattanDistance(ghostState.getPosition(), pacmanPosition) ==
                                min(notClosestDistances)]
         if len(secondClosestGhosts) == 0:
-            return closestGhosts[0], None
-        return closestGhosts[0], secondClosestGhosts[0]
+            dist1 = manhattanDistance(closestGhosts[0].getPosition(), pacmanPosition)
+            return (dist1, closestGhosts[0]), None
+        dist1 = manhattanDistance(closestGhosts[0].getPosition(), pacmanPosition)
+        dist2 = manhattanDistance(secondClosestGhosts[0].getPosition(), pacmanPosition)
+        return (dist1, closestGhosts[0]), (dist2, secondClosestGhosts[0])
 
     # this function is slow as it iterates over the whole board
 def getFoodDistances(gameState):
@@ -115,6 +119,44 @@ class ReflexAgent(Agent):
     legalMoves = gameState.getLegalActions()
 
     # Choose one of the best actions
+    scores = [betterEvaluationFunction(gameState.generatePacmanSuccessor(action)) for action in legalMoves]
+    bestScore = max(scores)
+    bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+    chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+
+
+    return legalMoves[chosenIndex]
+
+  def evaluationFunction(self, currentGameState, action):
+    """
+    The evaluation function takes in the current GameState (pacman.py) and the proposed action
+    and returns a number, where higher numbers are better.
+    """
+    successorGameState = currentGameState.generatePacmanSuccessor(action)
+    return scoreEvaluationFunction(successorGameState)
+
+
+#     ********* Reflex agent- sections a and b *********
+class OriginalReflexAgent(Agent):
+  """
+    A reflex agent chooses an action at each choice point by examining
+    its alternatives via a state evaluation function.
+  """
+  def __init__(self):
+    self.lastPositions = []
+    self.dc = None
+
+  def getAction(self, gameState):
+    """
+    getAction chooses among the best options according to the evaluation function.
+
+    getAction takes a GameState and returns some Directions.X for some X in the set {North, South, West, East, Stop}
+    ------------------------------------------------------------------------------
+    """
+    # Collect legal moves and successor states
+    legalMoves = gameState.getLegalActions()
+
+    # Choose one of the best actions
     scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
     bestScore = max(scores)
     bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
@@ -130,6 +172,7 @@ class ReflexAgent(Agent):
     """
     successorGameState = currentGameState.generatePacmanSuccessor(action)
     return scoreEvaluationFunction(successorGameState)
+
 
 
 #     ********* Evaluation functions *********
@@ -163,16 +206,15 @@ def betterEvaluationFunction(gameState):
         return -float('inf')
     if gameState.isWin():
         return float('inf')
-    ghostStates = gameState.getGhostStates()
-    isScared = ghostStates[0].scaredTimer > 0
-    if isScared is True:
-        w = -2
-    else:
-        w = 2
 
     closest_ghost, closest_ghost_2 = getClosestGhostPair(gameState)
+    w1 = -1 if closest_ghost[1].scaredTimer > 0 else 1
+    w2 = -1 if closest_ghost_2[1].scaredTimer > 0 else 1
+    closest_ghost = closest_ghost[0] * w1
+    closest_ghost_2 = closest_ghost_2[0] * w2
     avg_2_closest_ghosts = (2 * closest_ghost + closest_ghost_2) / 2
-    avg_ghosts_dist = getGhostDistAvg(gameState)
+    avg_ghosts_dist_scared = getGhostDistAvg(gameState, True)
+    avg_ghosts_dist_not_scared = getGhostDistAvg(gameState, False)
     avg_capsuls_dist = getCapsuleDistAvg(gameState)
     avg_food_dist = getAvgFoodDists(gameState)
     min_capsul_dist = getMinCapsuleDist(gameState)
@@ -181,58 +223,8 @@ def betterEvaluationFunction(gameState):
     num_ghosts = gameState.getNumAgents()-1
     score = gameState.getScore()
 
-    #############################################         sqr         ##################################################
-    sqr_closest_ghost = closest_ghost**2
-    sqr_closest_ghost_2 = closest_ghost_2**2
-    sqr_avg_2_closest_ghosts = avg_2_closest_ghosts**2
-    sqr_avg_ghosts_dist = avg_ghosts_dist**2
-    sqr_avg_capsuls_dist =  avg_capsuls_dist**2
-    sqr_avg_food_dist = avg_food_dist**2
-    sqr_min_capsul_dist = min_capsul_dist**2
-    sqr_min_food_dist = min_food_dist**2
-    sqr_num_food = num_food**2
-    sqr_num_ghosts = num_ghosts**2
-    sqr_score = score**2
-    #############################################         sqrt         #################################################
-    sqrt_closest_ghost = closest_ghost ** 0.5
-    sqrt_closest_ghost_2 = closest_ghost_2 ** 0.5
-    sqrt_avg_2_closest_ghosts = avg_2_closest_ghosts ** 0.5
-    sqrt_avg_ghosts_dist = avg_ghosts_dist ** 0.5
-    sqrt_avg_capsuls_dist = avg_capsuls_dist ** 0.5
-    sqrt_avg_food_dist = avg_food_dist ** 0.5
-    sqrt_min_capsul_dist = min_capsul_dist ** 0.5
-    sqrt_min_food_dist = min_food_dist ** 0.5
-    sqrt_num_food = num_food ** 0.5
-    sqrt_num_ghosts = num_ghosts ** 0.5
-    sqrt_score = score ** 0.5
-
-    ##########################################       food combi         ################################################
-    food_comb_1 = - min_food_dist**2/avg_food_dist
-    food_comb_2 = -(avg_food_dist**2) * min_food_dist
-
-    ##########################################    good ghost combi      ################################################
-    good_ghost_comb_1 = closest_ghost**(-10+avg_2_closest_ghosts)
-    good_ghost_comb_2 = avg_2_closest_ghosts**(-10+avg_2_closest_ghosts)
-    good_ghost_comb_3 = closest_ghost**(-10+closest_ghost_2)
-    good_ghost_comb_4 = closest_ghost_2**(-10+closest_ghost)
-
-    ##########################################    good ghost combi      ################################################
-    bad_ghost_comb_1 = - closest_ghost**(3/avg_2_closest_ghosts)
-    bad_ghost_comb_2 = - avg_2_closest_ghosts**(3/avg_2_closest_ghosts)
-
-    #############################################    score combi      ##################################################
-    score_comb_1 = (score)
-    score_comb_2 = (score)**2
-    score_comb_3 = (score)**3
-
-    food_val = food_comb_1 + food_comb_2
-    score_val = (score_comb_1 + score_comb_2 + score_comb_3)/num_food
-    #good_ghost_val = (good_ghost_comb_1 + good_ghost_comb_2 + good_ghost_comb_3 + good_ghost_comb_4)/100
-    bad_ghost_val = bad_ghost_comb_1 + bad_ghost_comb_2
-    # return food_val + score_val  -bad_ghost_val + min_capsul_dist*avg_food_dist*10
-
-    return score*1000/num_food - closest_ghost*(10 - avg_ghosts_dist) - min_capsul_dist + 1000/avg_food_dist - \
-           1000*min_food_dist/num_food + avg_ghosts_dist**2/1000
+    return score*1000/num_food + closest_ghost + avg_ghosts_dist_not_scared - 3*min_capsul_dist + 100/avg_food_dist - \
+           500*min_food_dist/num_food + avg_ghosts_dist_not_scared**2/1000 + closest_ghost_2/2
 #     ********* MultiAgent Search Agents- sections c,d,e,f*********
 class MultiAgentSearchAgent(Agent):
   """
