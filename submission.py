@@ -13,11 +13,22 @@ def minimum(arr):
         return 0
     return min(arr)
 
-def getGhostsDistances(gameState):
+def getGhostsDistances_(gameState):
     pacmanPosition = gameState.getPacmanPosition()
     ghostsPositions = gameState.getGhostPositions()
     distancesToPacman = [manhattanDistance(pos, pacmanPosition) for pos in ghostsPositions]
     return distancesToPacman
+
+def getGhostsDistances(gameState, isScared):
+    pacmanPosition = gameState.getPacmanPosition()
+    ghostStates = gameState.getGhostStates()
+    if isScared == True:
+        ghostsPostitions = [ghostState.getPosition() for ghostState in ghostStates if ghostState.scaredTimer > 0]
+    else:
+        ghostsPostitions = [ghostState.getPosition() for ghostState in ghostStates if ghostState.scaredTimer == 0]
+    distancesToPacman = [manhattanDistance(pos, pacmanPosition) for pos in ghostsPostitions]
+    return distancesToPacman
+
 
 def getCapsulesDistances(gameState):
     pacmanPosition = gameState.getPacmanPosition()
@@ -25,21 +36,34 @@ def getCapsulesDistances(gameState):
     distancesToPacman = [manhattanDistance(pos, pacmanPosition) for pos in capsulesPositions]
     return distancesToPacman
 
-def getGhostDistAvg(gameState):
-    distancesToPacman = getGhostsDistances(gameState)
+def getGhostDistAvg(gameState, isScared):
+    distancesToPacman = getGhostsDistances(gameState, isScared)
     return average(distancesToPacman)
 
 # returns two distances, with the closest to the left
 def getClosestGhostPair(gameState):
-    distancesToPacman = getGhostsDistances(gameState)
-    closestDistances = [dist for dist in distancesToPacman if dist == minimum(distancesToPacman)]
-    if len(closestDistances) > 1:
-        return minimum(distancesToPacman), minimum(distancesToPacman)
+    pacmanPosition = gameState.getPacmanPosition()
+    distancesToPacman = getGhostsDistances_(gameState)
+    if len(distancesToPacman) == 0:
+        return None, None
+    ghostStates = gameState.getGhostStates()
+    closestGhosts = [ghostState for ghostState in ghostStates if
+                     manhattanDistance(ghostState.getPosition(), pacmanPosition) == min(distancesToPacman)]
+    if len(closestGhosts) > 1:
+        return closestGhosts[0], closestGhosts[1]
     else:
-        distanceWithoutClosest = [dist for dist in distancesToPacman if dist != minimum(distancesToPacman)]
-        return minimum(distancesToPacman), minimum(distanceWithoutClosest)
+        notClosestGhosts = [ghostState for ghostState in ghostStates if
+                            manhattanDistance(ghostState.getPosition(), pacmanPosition) != min(distancesToPacman)]
+        notClosestDistances = [manhattanDistance(ghostState.getPosition(), pacmanPosition) for
+                               ghostState in notClosestGhosts]
+        secondClosestGhosts = [ghostState for ghostState in notClosestGhosts if
+                               manhattanDistance(ghostState.getPosition(), pacmanPosition) ==
+                               min(notClosestDistances)]
+        if len(secondClosestGhosts) == 0:
+            return closestGhosts[0], None
+        return closestGhosts[0], secondClosestGhosts[0]
 
-# this function is slow as it iterates over the whole board
+    # this function is slow as it iterates over the whole board
 def getFoodDistances(gameState):
     pacmanPosition = gameState.getPacmanPosition()
     foods = gameState.getFood()
@@ -139,21 +163,30 @@ def betterEvaluationFunction(gameState):
       return -float('inf')
   if gameState.isWin():
       return float('inf')
-  ghostStates = gameState.getGhostStates()
-  isScared = ghostStates[0].scaredTimer > 0
-  if isScared is True:
-      w = -1
-  else:
-      w = 1
 
-  minG1, minG2 = getClosestGhostPair(gameState)
-  minG = (2*minG1 + minG2)/2
-  avgG = getGhostDistAvg(gameState)
+  minGhost1, minGhost2 = getClosestGhostPair(gameState)
+  minG1, minG2 = 0,0
+  if minGhost1 is not None:
+      if minGhost1.scaredTimer > 0:
+          isScared1 = -1
+      else:
+          isScared1 = 1
+      minG1 = isScared1*manhattanDistance(minGhost1.getPosition(), gameState.getPacmanPosition())
+  if minGhost2 is not None:
+      if minGhost2.scaredTimer > 0:
+          isScared2 = -1
+      else:
+          isScared2 = 1
+      minG2 = isScared2*manhattanDistance(minGhost2.getPosition(), gameState.getPacmanPosition())
+
+
+  avgGhostsScared = getGhostDistAvg(gameState, True)
+  avgGhostsNotScared = getGhostDistAvg(gameState, False)
   avgC = getCapsuleDistAvg(gameState)
   avgF = getAvgFoodDists(gameState)
   minC = getMinCapsuleDist(gameState)
   minF = getMinFoodDist(gameState)
-  return w*(avgG + minG) + gameState.getScore() - (avgC + minC + avgF + minF)
+  return avgGhostsNotScared + gameState.getScore() + minG1 + minG2  - (avgC + minC + avgF + minF + avgGhostsScared)
 
 
 #     ********* MultiAgent Search Agents- sections c,d,e,f*********
@@ -189,7 +222,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
   """
 
   def minimax(self, gameState, agentIndex, depth):
-      numAgents = gameState.getNumAgents()
       if depth == 0 or gameState.isWin() or gameState.isLose():
           return self.evaluationFunction(gameState)
 
@@ -297,6 +329,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 if curMin <= alpha:
                     return -float('inf')
             return curMin
+
     def getAction(self, gameState):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
@@ -338,7 +371,7 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
                 nextState = gameState.generateSuccessor(agentIndex, move)
                 sum += p*self.expectimax(nextState, self.getNextAgentIndex(agentIndex,
                                                                          nextState.getNumAgents()), depth - 1)
-                return sum
+            return sum
         if agentIndex == 0:
             curMax = -float('inf')
             for move in legalMoves:
@@ -372,7 +405,7 @@ class RandomExpectimaxAgent(MultiAgentSearchAgent):
         beta = float('inf')
         for move in legalMoves:
             nextState = gameState.generateSuccessor(0, move)
-            v = (self.expectimax(nextState, self.getNextAgentIndex(0, nextState.getNumAgents()), real_depth - 1))
+            v = self.expectimax(nextState, self.getNextAgentIndex(0, nextState.getNumAgents()), real_depth - 1)
             scores.append(v)
             alpha = max(v, alpha)
 
@@ -429,7 +462,7 @@ class DirectionalExpectimaxAgent(MultiAgentSearchAgent):
                 nextState = gameState.generateSuccessor(agentIndex, move)
                 sum += dist[move] * self.expectimax(nextState, self.getNextAgentIndex(agentIndex,
                                                                              nextState.getNumAgents()), depth - 1)
-                return sum
+            return sum
         if agentIndex == 0:
             curMax = -float('inf')
             for move in legalMoves:
