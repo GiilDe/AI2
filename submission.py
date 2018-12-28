@@ -207,11 +207,18 @@ def betterEvaluationFunction(gameState):
     if gameState.isWin():
         return float('inf')
 
-    closest_ghost, closest_ghost_2 = getClosestGhostPair(gameState)
-    w1 = -1 if closest_ghost[1].scaredTimer > 0 else 1
-    w2 = -1 if closest_ghost_2[1].scaredTimer > 0 else 1
-    closest_ghost = closest_ghost[0] * w1
-    closest_ghost_2 = closest_ghost_2[0] * w2
+    closest_ghost_, closest_ghost_2_ = getClosestGhostPair(gameState)
+    if closest_ghost_ is None:
+        closest_ghost = 0
+    else:
+        w1 = -1 if closest_ghost_[1].scaredTimer > 0 else 1
+        closest_ghost = closest_ghost_[0] * w1
+    if closest_ghost_2_ is None:
+        closest_ghost_2 = 0
+    else:
+        w2 = -1 if closest_ghost_2_[1].scaredTimer > 0 else 1
+        closest_ghost_2 = closest_ghost_2_[0] * w2
+
     avg_2_closest_ghosts = (2 * closest_ghost + closest_ghost_2) / 2
     avg_ghosts_dist_scared = getGhostDistAvg(gameState, True)
     avg_ghosts_dist_not_scared = getGhostDistAvg(gameState, False)
